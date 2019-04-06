@@ -8,6 +8,7 @@ console.log(properties.get("db.host"));
 var pool  = mysql.createPool({
   connectionLimit : 10,   //default value = 10
   host            : properties.get("db.host"),
+  port            : properties.get("db.port"),
   user            : properties.get("db.user"),
   password        : properties.get("db.password"),
   database        : properties.get("db.name")
