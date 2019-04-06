@@ -1,5 +1,6 @@
 const express = require("express");
 const body_parser = require("body-parser");
+const dao = require("./dao.js");
 
 var server = express();
 
@@ -18,7 +19,11 @@ server.get("/", (req, res) => {
 
 server.post("/user/register", (req, res) => {
     console.log(req.body);
-    res.send("New user registered");
+    dao.registerUser(req.body).then((successMessage) => {
+        res.status(200).send(successMessage);
+    }, (errorMessage) => {
+        res.status(200).send(errorMessage);
+    });
 });
 
 function startServer(port, host) {
