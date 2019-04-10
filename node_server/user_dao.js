@@ -2,8 +2,8 @@ const db = require("./db.js");
 
 function registerUser(user) {
     var query = {
-      sql : "INSERT INTO user(name, mobile) VALUES (?, ?)",
-      values : [user.name, user.mobile]
+      sql : "INSERT INTO user(name, mobile, password) VALUES (?, ?, ?)",
+      values : [user.name, user.mobile, user.password]
     };
     const dbPromise = new Promise((resolve, reject) => {
       db.executeQuery(query, (err, results, fields) => {
@@ -22,7 +22,6 @@ function registerUser(user) {
       }); 
     });
     return dbPromise;
-
 }
 
 module.exports.registerUser = registerUser;
