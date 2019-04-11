@@ -34,7 +34,10 @@ server.post("/user/register", (req, res) => {
         res.status(200).send({ success: false, message: "Enter valid name, mobile numder and password !!" });
     } else {
         user_dao.registerUser(req.body).then((successMessage) => {
-            res.status(200).send({ success: true, message: successMessage });
+            res.status(200).send({
+                success: true,
+                message: successMessage
+            });
         }, (errorMessage) => {
             res.status(200).send({ success: false, message: errorMessage });
         });
@@ -56,8 +59,13 @@ server.put("/user/login", (req, res) => {
     if (login_details.mobile == undefined || login_details.password == undefined) {
         res.status(200).send({ success: false, message: "Enter valid login details !!" });
     } else {
-        login_dao.login(req.body).then((successMessage) => {
-            res.status(200).send({ success: true, message: successMessage });
+        login_dao.login(req.body).then((successResponse) => {
+            res.status(200).send({ 
+                success: true,
+                 message: successResponse.message,
+                 name: successResponse.name,
+                 mobile: successResponse.mobile
+                 });
         }, (errorMessage) => {
             res.status(200).send({ success: false, message: errorMessage });
         });
