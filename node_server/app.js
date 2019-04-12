@@ -1,4 +1,5 @@
 const server = require("./server.js");
+require("./socket_server.js");
 
 /**
  * Starting server:

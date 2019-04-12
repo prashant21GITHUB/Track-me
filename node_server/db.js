@@ -19,7 +19,7 @@ pool.getConnection((err, connection) => {
     connection.ping((err) => {
         connection.release();
         if (err) throw err;
-        console.log('Server responded to ping');
+        console.log('DB responded to ping');
 
     })
 

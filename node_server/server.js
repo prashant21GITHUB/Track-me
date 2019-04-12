@@ -3,21 +3,32 @@ const body_parser = require("body-parser");
 const user_dao = require("./user_dao.js");
 const login_dao = require("./login_dao.js");
 
-var server = express();
+var app = express();
+var httpServer = require('http').createServer(app);
+var io = require('socket.io')(httpServer);
 
-server.use(body_parser.json()); // for parsing application/json
+app.use(body_parser.json()); // for parsing application/json
 
 // Enable CORS
-server.use(function (req, res, next) {
+app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
 });
 
-server.get("/", (req, res) => {
+app.get("/", (req, res) => {
     console.log("server access");
     res.send("Success");
 });
+
+//Track request
+app.put("/track/request", (req, res) => {
+    console.log(req.body);
+    track_request = req.body;
+
+    
+});
+
 
 /**
  * req object: 
@@ -27,7 +38,7 @@ server.get("/", (req, res) => {
  *    password : "xxxxxx"
  * }
  */
-server.post("/user/register", (req, res) => {
+app.post("/user/register", (req, res) => {
     console.log(req.body);
     user_details = req.body;
     if (user_details.name == undefined || user_details.mobile == undefined || user_details.password == undefined) {
@@ -53,19 +64,19 @@ server.post("/user/register", (req, res) => {
  * 
  * Note - Mobile no. length is fixed of size 10
  */
-server.put("/user/login", (req, res) => {
+app.put("/user/login", (req, res) => {
     console.log(req.body);
     login_details = req.body;
     if (login_details.mobile == undefined || login_details.password == undefined) {
         res.status(200).send({ success: false, message: "Enter valid login details !!" });
     } else {
         login_dao.login(req.body).then((successResponse) => {
-            res.status(200).send({ 
+            res.status(200).send({
                 success: true,
-                 message: successResponse.message,
-                 name: successResponse.name,
-                 mobile: successResponse.mobile
-                 });
+                message: successResponse.message,
+                name: successResponse.name,
+                mobile: successResponse.mobile
+            });
         }, (errorMessage) => {
             res.status(200).send({ success: false, message: errorMessage });
         });
@@ -73,7 +84,12 @@ server.put("/user/login", (req, res) => {
 });
 
 function startServer(port, host) {
-    server.listen(port, host);
+    httpServer.listen(port, host);
+}
+
+function getSocketIOInstance() {
+    return io;
 }
 
 module.exports.startServer = startServer;
+module.exports.getSocketIOInstance = getSocketIOInstance;
