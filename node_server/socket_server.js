@@ -2,13 +2,22 @@ const server = require("./server.js");
 const io = server.getSocketIOInstance();
 
 io.on('connection', function (socket) {
-    socket.emit('news', { hello: 'world' });
-    socket.emit('news2', { hello: 'world2' });
-    socket.on('my other event', function (data) {
+    console.log('an user connected: ', socket.id);
+    
+    socket.on('locationCoords', function (data){
         console.log(data);
+        socket.broadcast.emit('message', {
+          mobile: '7767947111',
+          lat: 10.00,
+          lng: 20.89
+        });
+        // socket.send("ok");
+        // socket.emit(data.mobile, data);
     });
-    socket.on('my other event2', function (data) {
-        console.log(data);
+    
+    socket.on('disconnect', function(){
+      console.log('user disconnected: ', socket.id);
     });
-    console.log("got socket connection");
+ 
 });
+io.emit("hi");
