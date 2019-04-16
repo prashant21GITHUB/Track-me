@@ -22,16 +22,15 @@ var socket = io.connect('http://localhost:3000');
 //     lng : 20.00
 // });
 
-socket.on('7767947111', (data) => {
+socket.on('9540181912', (data) => {
     console.log("got response: ", data);
     // socket.emit('unsubscribe', {
-    //     mobile: '7767947111'
+    //     mobile: '9540181912'
     // })
-    // console.log(data);
 });
 
 socket.emit('subscribe', {
-    mobile: '7767947111'
+    mobile: '9540181912'
 })
 
 socket.on('disconnect', function(){
