@@ -25,10 +25,35 @@ app.get("/", (req, res) => {
 app.put("/track/request", (req, res) => {
     console.log(req.body);
     track_request = req.body;
-
-    
 });
 
+app.put("/user/isregistered", (req, res) => {
+    mobile = req.body.mobile;
+    if (mobile == undefined ) {
+        res.status(200).send({ success: false, message: "Entered mobile number is invalid !!" });
+    } else {
+        user_dao.isMobileNumberRegistered(mobile).then((successMessage) => {
+            res.status(200).send(successMessage);
+        }, (errorMessage) => {
+            res.status(200).send(errorMessage);
+        });
+    }
+});
+
+app.put("/user/location/share", (req, res) => {
+    mobile = req.body.mobile;
+    contacts = req.body.contacts;
+    console.log(req.body);
+    if (mobile == undefined ) {
+        res.status(200).send({ success: false, message: "Entered mobile number is invalid !!" });
+    } else {
+        user_dao.isMobileNumberRegistered(mobile).then((successMessage) => {
+            res.status(200).send(successMessage);
+        }, (errorMessage) => {
+            res.status(200).send(errorMessage);
+        });
+    }
+});
 
 /**
  * req object: 
@@ -42,7 +67,7 @@ app.post("/user/register", (req, res) => {
     console.log(req.body);
     user_details = req.body;
     if (user_details.name == undefined || user_details.mobile == undefined || user_details.password == undefined) {
-        res.status(200).send({ success: false, message: "Enter valid name, mobile numder and password !!" });
+        res.status(200).send({ success: false, message: "Entered name, mobile number or password is invalid !!" });
     } else {
         user_dao.registerUser(req.body).then((successMessage) => {
             res.status(200).send({
@@ -81,6 +106,16 @@ app.put("/user/login", (req, res) => {
             res.status(200).send({ success: false, message: errorMessage });
         });
     }
+});
+
+app.post("/track/sendLocation", (req, res) => {
+    console.log(req.body);
+    location_coords = req.body;
+    lat = location_coords.lat;
+    lng = location_coords.lng;
+    mobile = location_coords.mobile;
+    
+    
 });
 
 function startServer(port, host) {
