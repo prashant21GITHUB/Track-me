@@ -43,6 +43,7 @@ app.put("/user/isregistered", (req, res) => {
 
 app.put("/user/track/details", (req, res) => {
     mobile = req.body.mobile;
+    console.log("/user/track/details", mobile);
     if (mobile == undefined ) {
         res.status(200).send({ success: false, message: "Entered mobile number is invalid !!" });
     } else {
