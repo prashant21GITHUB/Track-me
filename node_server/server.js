@@ -2,6 +2,7 @@ const express = require("express");
 const body_parser = require("body-parser");
 const user_dao = require("./user_dao.js");
 const login_dao = require("./login_dao.js");
+const user_data = require("./users_graph.js");
 
 var app = express();
 var httpServer = require('http').createServer(app);
@@ -40,18 +41,36 @@ app.put("/user/isregistered", (req, res) => {
     }
 });
 
-app.put("/user/location/share", (req, res) => {
+app.put("/user/track/details", (req, res) => {
     mobile = req.body.mobile;
-    contacts = req.body.contacts;
-    console.log(req.body);
     if (mobile == undefined ) {
         res.status(200).send({ success: false, message: "Entered mobile number is invalid !!" });
     } else {
-        user_dao.isMobileNumberRegistered(mobile).then((successMessage) => {
-            res.status(200).send(successMessage);
-        }, (errorMessage) => {
-            res.status(200).send(errorMessage);
-        });
+        tracking_details = user_data.getUserDetails(mobile);
+        // console.log(tracking_details);
+        res.status(200).send({
+            success : true,
+            sharingWith : Array.from(tracking_details.sharingWith),
+            tracking : Array.from(tracking_details.tracking)
+        })
+    }
+});
+
+app.put("/user/location/share", (req, res) => {
+    // console.log("Body: ", req.body);
+    mobile = req.body.mobile;
+    contacts = JSON.parse(req.body.contacts);
+    // console.log(contacts, typeof contacts);
+    if (mobile == undefined ) {
+        res.status(200).send({ success: false, message: "Entered mobile number is invalid !!" });
+    } else if(contacts == undefined || contacts.length == 0) {
+        res.status(200).send({ success: false, message: "Empty contact list !!" });
+    } 
+    else {
+        user_data.addUser(mobile, contacts);
+        res.status(200).send({
+            success : true
+        })
     }
 });
 
