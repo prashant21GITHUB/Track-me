@@ -60,6 +60,8 @@ app.put("/user/track/details", (req, res) => {
 app.put("/user/location/share", (req, res) => {
     // console.log("Body: ", req.body);
     mobile = req.body.mobile;
+
+    console.log(typeof req.body.contacts, req.body.contacts);
     contacts = JSON.parse(req.body.contacts);
     // console.log(contacts, typeof contacts);
     if (mobile == undefined ) {

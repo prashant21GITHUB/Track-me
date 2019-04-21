@@ -1,7 +1,8 @@
 const server = require("./server.js");
 const io = server.getSocketIOInstance();
 
-var publishersMap = new Map();
+const publishersMap = new Map();
+const connectionsMap = new Map();
 
 io.on('connection', function (socket) {
   console.log('an user connected: ', socket.id);
@@ -18,6 +19,10 @@ io.on('connection', function (socket) {
   //     // socket.emit(data.mobile, data);
   // });
 
+  socket.on('connectedMobile', (mobile) => {
+     connectionsMap.set(mobile, socket.id);
+  });
+
   socket.on('startPublish', (mobile) => {
     console.log("started publishing", socket.id, mobile);
     publishersMap.set(mobile, socket.id);
@@ -25,13 +30,12 @@ io.on('connection', function (socket) {
 
   });
 
-  socket.on('publish', function (data, ackFn) {
+  socket.on('publish', function (data) {
     console.log("publish data", data);
     // room = publishersMap.get(socket.id);
     if (publishersMap.has(data.mobile)) {
       socket.broadcast.to(data.mobile).emit(data.mobile, data);
     }
-    ackFn();
   });
 
   socket.on('stopPublish', function (data) {
@@ -77,6 +81,7 @@ io.on('connection', function (socket) {
     }
     stopPublishing(socket, mobile_key);
     publishersMap.delete(mobile_key); //TODO : how to delete efficiently
+    connectionsMap.delete()
   });
 
 });
