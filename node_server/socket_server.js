@@ -5,7 +5,6 @@ const publishersMap = new Map();
 const connectionsMap = new Map();
 
 io.on('connection', function (socket) {
-  console.log('an user connected: ', socket.id);
 
   // socket.on('locationCoords', function (data){
   //     console.log(data);
@@ -20,6 +19,7 @@ io.on('connection', function (socket) {
   // });
 
   socket.on('connectedMobile', (mobile) => {
+    console.log('an user connected: ', socket.id, mobile);
      connectionsMap.set(mobile, socket.id);
   });
 
@@ -42,7 +42,7 @@ io.on('connection', function (socket) {
   });
 
   socket.on('stopPublish', function (data) {
-    console.log("publish data", data);
+    console.log("stop publish data", data);
     stopPublishing(data);
   });
 
