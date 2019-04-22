@@ -34,7 +34,10 @@ io.on('connection', function (socket) {
     console.log("publish data", data);
     // room = publishersMap.get(socket.id);
     if (publishersMap.has(data.mobile)) {
-      socket.broadcast.to(data.mobile).emit(data.mobile, data);
+      //sending excluding sender
+      // socket.broadcast.to(data.mobile).emit(data.mobile, data);
+      //sending including sender
+      io.in(data.mobile).emit(data.mobile, data);
     }
   });
 
@@ -43,16 +46,16 @@ io.on('connection', function (socket) {
     stopPublishing(data);
   });
 
-  socket.on('subscribe', function (data, ackFn) {
-    console.log("subscribe to mobile ", data.mobile);
-    if (publishersMap.get(data.mobile)) {
-      console.log("socket joining room", socket.id, data.mobile);
-      socket.join(data.mobile);
+  socket.on('subscribe', function (mobile, ackFn) {
+    console.log("subscribe to mobile ", mobile);
+    if (publishersMap.get(mobile)) {
+      console.log("socket joining room", socket.id, mobile);
+      socket.join(mobile);
       ackFn({
         status: "connected"
       })
     } else {
-      console.log("No room", socket.id, data.mobile);
+      console.log("No room", socket.id, mobile);
       // socket.to(socket.id).emit(data.mobile, {
       //   mobile: 'disconnected'
       // });
@@ -60,9 +63,9 @@ io.on('connection', function (socket) {
     }
   });
 
-  socket.on('unsubscribe', function (data) {
-    console.log("un-subscribe to mobile ", data.mobile);
-    socket.leave(data.mobile);
+  socket.on('unsubscribe', function (mobile) {
+    console.log("un-subscribe to mobile ", mobile);
+    socket.leave(mobile);
   });
 
   socket.on('disconnect', function () {
