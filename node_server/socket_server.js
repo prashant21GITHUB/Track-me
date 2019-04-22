@@ -99,9 +99,9 @@ io.on('connection', function (socket) {
 
 function stopPublishing(socket, mobile) {
   room = mobile;
-  socket.broadcast.to(room).emit(room, {
-    mobile: 'disconnected'
-  });
+//   socket.broadcast.to(room).emit(room, {
+//     mobile: 'disconnected'
+//   });
   io.of('/').in(room).clients((error, clients) => {
     console.log("connected clients:", clients);
     if (clients.length > 0) {
