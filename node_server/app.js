@@ -6,4 +6,4 @@ require("./socket_server.js");
  *  port: 3000
  *  host: localhost
  */
-server.startServer(3000, "localhost");
+server.startServer(3000);
