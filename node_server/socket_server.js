@@ -23,9 +23,17 @@ io.on('connection', function (socket) {
      connectionsMap.set(mobile, socket.id);
   });
 
-  socket.on('startPublish', (mobile) => {
-    console.log("started publishing", socket.id, mobile);
+  socket.on('startPublish', (mobile_arr) => {
+    console.log("started publishing", socket.id, mobile_arr);
+    publisher = mobile_arr[0];
     publishersMap.set(mobile, socket.id);
+    for(let i=1; i < mobile_arr.length; i++) {
+       socket_id = connectionsMap.get(mobile_arr[i]);
+       if(socket_id != undefined) {
+         io.to(socket_id).emit("publisherAvailable", publisher);
+         console.log("Publisher available from ", publisher, " --> ", mobile_arr[i]);
+       }
+    }
     console.log(publishersMap);
 
   });
