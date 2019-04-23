@@ -51,7 +51,7 @@ io.on('connection', function (socket) {
 
   socket.on('stopPublish', function (mobile) {
     console.log("stop publish data", mobile);
-    clearRoom(mobile);
+    clearRoom(socket, mobile);
     publishersMap.delete(mobile);
   });
 
@@ -98,7 +98,7 @@ io.on('connection', function (socket) {
 
 });
 
-function clearRoom(mobile) {
+function clearRoom(socket, mobile) {
   room = mobile;
   socket.broadcast.to(room).emit("publisherNotAvailable", room);
   io.of('/').in(room).clients((error, clients) => {
