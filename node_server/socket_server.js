@@ -19,7 +19,7 @@ io.on('connection', function (socket) {
   // });
 
   socket.on('connectedMobile', (mobile) => {
-    console.log('an user connected: ', socket.id, mobile);
+     console.log('an user connected: ', socket.id, mobile);
      connectionsMap.set(mobile, socket.id);
   });
 
@@ -43,15 +43,16 @@ io.on('connection', function (socket) {
     // room = publishersMap.get(socket.id);
     if (publishersMap.has(data.mobile)) {
       //sending excluding sender
-      // socket.broadcast.to(data.mobile).emit(data.mobile, data);
+      socket.broadcast.to(data.mobile).emit(data.mobile, data);
       //sending including sender
-      io.in(data.mobile).emit(data.mobile, data);
-    }
+      // io.in(data.mobile).emit(data.mobile, data);
+    } //TODO: check how to handle this situation to optimize memory
   });
 
-  socket.on('stopPublish', function (data) {
-    console.log("stop publish data", data);
-    stopPublishing(data);
+  socket.on('stopPublish', function (mobile) {
+    console.log("stop publish data", mobile);
+    clearRoom(mobile);
+    publishersMap.delete(mobile);
   });
 
   socket.on('subscribe', function (mobile, ackFn) {
@@ -82,31 +83,31 @@ io.on('connection', function (socket) {
     // io.sockets.clients(room).forEach( (socket_id) => {
     //   socket_id.leave(room);
     // });
-    var mobile_key;
-    for (var [key, value] of publishersMap.entries()) {
-      if (value == socket.id) {
-        mobile_key = key;
-        console.log("mobile key", mobile_key);
-        break;
-      }
-    }
-    stopPublishing(socket, mobile_key);
-    publishersMap.delete(mobile_key); //TODO : how to delete efficiently
+    // var mobile_key;
+    // for (var [key, value] of publishersMap.entries()) {
+    //   if (value == socket.id) {
+    //     mobile_key = key;
+    //     console.log("mobile key", mobile_key);
+    //     break;
+    //   }
+    // }
+    // stopPublishing(socket, mobile_key);
+    // publishersMap.delete(mobile_key); //TODO : how to delete efficiently
     connectionsMap.delete()
   });
 
 });
 
-function stopPublishing(socket, mobile) {
+function clearRoom(mobile) {
   room = mobile;
 //   socket.broadcast.to(room).emit(room, {
 //     mobile: 'disconnected'
 //   });
   io.of('/').in(room).clients((error, clients) => {
-    console.log("connected clients:", clients);
+    // console.log("connected clients:", clients);
     if (clients.length > 0) {
-      console.log('clients in the room: \n');
-      console.log(clients);
+      console.log('connected clients in the room: ', room, clients);
+      // console.log(clients);
       clients.forEach((socket_id) => {
         io.sockets.sockets[socket_id].leave(room);
       });
