@@ -100,9 +100,7 @@ io.on('connection', function (socket) {
 
 function clearRoom(mobile) {
   room = mobile;
-//   socket.broadcast.to(room).emit(room, {
-//     mobile: 'disconnected'
-//   });
+  socket.broadcast.to(room).emit("publisherNotAvailable", room);
   io.of('/').in(room).clients((error, clients) => {
     // console.log("connected clients:", clients);
     if (clients.length > 0) {
