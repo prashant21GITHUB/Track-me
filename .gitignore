@@ -1,2 +1,3 @@
 node_server/node_modules/
 node_server/package-lock.json
+node_server/log/
