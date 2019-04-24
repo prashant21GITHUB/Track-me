@@ -4,10 +4,12 @@ const user_dao = require("./user_dao.js");
 const login_dao = require("./login_dao.js");
 const user_data = require("./users_graph.js");
 
-var app = express();
-var httpServer = require('http').createServer(app);
-var io = require('socket.io')(httpServer);
+const logger = require("./logger.js");
+const app = express();
+const httpServer = require('http').createServer(app);
+const io = require('socket.io')(httpServer);
 
+var fnId = 1;
 app.use(body_parser.json()); // for parsing application/json
 
 // Enable CORS
@@ -18,18 +20,15 @@ app.use(function (req, res, next) {
 });
 
 app.get("/", (req, res) => {
-    console.log("server access");
+    logger.info("request /")
     res.send("Success");
-});
-
-//Track request
-app.put("/track/request", (req, res) => {
-    console.log(req.body);
-    track_request = req.body;
 });
 
 app.put("/user/isregistered", (req, res) => {
     mobile = req.body.mobile;
+    //TODO: do not trace password
+    fId = fnId;
+    logger.info("ReqId:" +fId+ "URL:/user/isregistered, Mobile:" +mobile +", Req:" + JSON.stringify(req.body));
     if (mobile == undefined ) {
         res.status(200).send({ success: false, message: "Entered mobile number is invalid !!" });
     } else {
@@ -43,7 +42,8 @@ app.put("/user/isregistered", (req, res) => {
 
 app.put("/user/track/details", (req, res) => {
     mobile = req.body.mobile;
-    console.log("/user/track/details", mobile);
+    logger.info("URL:/user/track/details, Mobile:" +mobile +", Req:" + JSON.stringify(req.body));
+   
     if (mobile == undefined ) {
         res.status(200).send({ success: false, message: "Entered mobile number is invalid !!" });
     } else {
@@ -60,8 +60,7 @@ app.put("/user/track/details", (req, res) => {
 app.put("/user/location/share", (req, res) => {
     // console.log("Body: ", req.body);
     mobile = req.body.mobile;
-
-    console.log(typeof req.body.contacts, req.body.contacts);
+    logger.info("URL:/user/location/share, Mobile:" +mobile +", Req:" + JSON.stringify(req.body));
     contacts = JSON.parse(req.body.contacts);
     // console.log(contacts, typeof contacts);
     if (mobile == undefined ) {
@@ -88,6 +87,7 @@ app.put("/user/location/share", (req, res) => {
 app.post("/user/register", (req, res) => {
     console.log(req.body);
     user_details = req.body;
+    logger.info("URL:/user/register, Mobile:" + req.body.mobile +", Req:" + JSON.stringify(req.body));
     if (user_details.name == undefined || user_details.mobile == undefined || user_details.password == undefined) {
         res.status(200).send({ success: false, message: "Entered name, mobile number or password is invalid !!" });
     } else {
@@ -112,7 +112,7 @@ app.post("/user/register", (req, res) => {
  * Note - Mobile no. length is fixed of size 10
  */
 app.put("/user/login", (req, res) => {
-    console.log(req.body);
+    logger.info("URL:/user/login, Mobile:" + req.body.mobile +", Req:" + JSON.stringify(req.body));
     login_details = req.body;
     if (login_details.mobile == undefined || login_details.password == undefined) {
         res.status(200).send({ success: false, message: "Enter valid login details !!" });
@@ -130,15 +130,6 @@ app.put("/user/login", (req, res) => {
     }
 });
 
-app.post("/track/sendLocation", (req, res) => {
-    console.log(req.body);
-    location_coords = req.body;
-    lat = location_coords.lat;
-    lng = location_coords.lng;
-    mobile = location_coords.mobile;
-    
-    
-});
 
 function startServer(port, host) {
     httpServer.listen(port, host);
