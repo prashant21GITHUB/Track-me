@@ -67,7 +67,7 @@ io.on('connection', function (socket) {
   });
 
   socket.on('disconnect', function () {
-    logger.info("on:disconnect, Socket:" + socket_id);
+    logger.info("on:disconnect, Socket:" + socket.id);
     // stopPublishing(socket);
     // io.sockets.clients(room).forEach( (socket_id) => {
     //   socket_id.leave(room);
