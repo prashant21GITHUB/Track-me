@@ -61,7 +61,7 @@ app.put("/user/location/share", (req, res) => {
     // console.log("Body: ", req.body);
     mobile = req.body.mobile;
     logger.info("URL:/user/location/share, Mobile:" +mobile +", Req:" + JSON.stringify(req.body));
-    contacts = JSON.parse(req.body.contacts);
+    contacts = req.body.contacts;
     // console.log(contacts, typeof contacts);
     if (mobile == undefined ) {
         res.status(200).send({ success: false, message: "Entered mobile number is invalid !!" });
