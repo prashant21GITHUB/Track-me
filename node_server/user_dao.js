@@ -52,8 +52,10 @@ function isMobileNumberRegistered(mobile) {
 
 function addContactToShareLocation(from_mobile, to_mobile, to_name) {
   var query = {
-    sql: "INSERT INTO shared_location_contacts(from_mobile, to_mobile, to_name) VALUES (?, ?, ?)",
-    values: [from_mobile, to_mobile, to_name]
+    // sql: "INSERT INTO shared_location_contacts(from_mobile, to_mobile, to_name) VALUES (?, ?, ?)",
+    //Also checking If contact is registered or not
+    sql: "INSERT INTO shared_location_contacts(from_mobile, to_mobile, to_name) SELECT ?, ?, ? FROM user WHERE mobile = ?",
+    values: [from_mobile, to_mobile, to_name, to_mobile]
   };
   const dbPromise = new Promise((resolve, reject) => {
     db.executeQuery(query, (err, results, fields) => {
@@ -68,6 +70,8 @@ function addContactToShareLocation(from_mobile, to_mobile, to_name) {
           resolve({
             success: true
           });
+        } else if (results.affectedRows == 0) {
+          reject("Contact is not registered");
         } else {
           reject("Internal error");
         }
