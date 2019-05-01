@@ -118,7 +118,6 @@ function getTrackingDetails(mobile) {
       if (err) {
         reject(err.code + " " + err.message);
       } else {
-        console.log(results);
         let sharingWith = new Array();
         let tracking = new Array();
         for(let res of results) {
