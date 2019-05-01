@@ -28,8 +28,8 @@ app.put("/user/isregistered", (req, res) => {
     mobile = req.body.mobile;
     //TODO: do not trace password
     fId = fnId;
-    logger.info("ReqId:" +fId+ "URL:/user/isregistered, Mobile:" +mobile +", Req:" + JSON.stringify(req.body));
-    if (mobile == undefined ) {
+    logger.info("ReqId:" + fId + "URL:/user/isregistered, Mobile:" + mobile + ", Req:" + JSON.stringify(req.body));
+    if (mobile == undefined) {
         res.status(200).send({ success: false, message: "Entered mobile number is invalid !!" });
     } else {
         user_dao.isMobileNumberRegistered(mobile).then((successMessage) => {
@@ -42,37 +42,82 @@ app.put("/user/isregistered", (req, res) => {
 
 app.put("/user/track/details", (req, res) => {
     mobile = req.body.mobile;
-    logger.info("URL:/user/track/details, Mobile:" +mobile +", Req:" + JSON.stringify(req.body));
-   
-    if (mobile == undefined ) {
+    logger.info("URL:/user/track/details, Mobile:" + mobile + ", Req:" + JSON.stringify(req.body));
+
+    if (mobile == undefined) {
         res.status(200).send({ success: false, message: "Entered mobile number is invalid !!" });
     } else {
-        tracking_details = user_data.getUserDetails(mobile);
-        // console.log(tracking_details);
-        res.status(200).send({
-            success : true,
-            sharingWith : Array.from(tracking_details.sharingWith),
-            tracking : Array.from(tracking_details.tracking)
-        })
+        user_dao.getTrackingDetails(mobile).then((tracking_details) => {
+                res.status(200).send({
+                    success: true,
+                    sharingWith: tracking_details.sharingWith,
+                    tracking: tracking_details.tracking
+                })
+        }, (error) => {
+            res.status(200).send({ success: false, message: error });
+        });
     }
 });
 
-app.put("/user/location/share", (req, res) => {
+// app.put("/user/location/share", (req, res) => {
+//     // console.log("Body: ", req.body);
+//     mobile = req.body.mobile;
+//     logger.info("URL:/user/location/share, Mobile:" +mobile +", Req:" + JSON.stringify(req.body));
+//     contacts = req.body.contacts;
+//     // console.log(contacts, typeof contacts);
+//     if (mobile == undefined ) {
+//         res.status(200).send({ success: false, message: "Entered mobile number is invalid !!" });
+//     } else if(contacts == undefined || contacts.length == 0) {
+//         res.status(200).send({ success: false, message: "Empty contact list !!" });
+//     } 
+//     else {
+//         user_data.addUser(mobile, contacts);
+//         res.status(200).send({
+//             success : true
+//         })
+//     }
+// });
+
+app.post("/user/location/share/addcontact", (req, res) => {
     // console.log("Body: ", req.body);
-    mobile = req.body.mobile;
-    logger.info("URL:/user/location/share, Mobile:" +mobile +", Req:" + JSON.stringify(req.body));
-    contacts = req.body.contacts;
+    from_mobile = req.body.from_mobile;
+    to_mobile = req.body.to_mobile;
+    to_name = req.body.to_name;
+    logger.info("URL:/user/location/share/addcontact, From Mobile:" + from_mobile + ", To Mobile:" + to_mobile + ", To Name:" + to_name);
     // console.log(contacts, typeof contacts);
-    if (mobile == undefined ) {
+    if (from_mobile == undefined || to_mobile == undefined || to_name == undefined) {
         res.status(200).send({ success: false, message: "Entered mobile number is invalid !!" });
-    } else if(contacts == undefined || contacts.length == 0) {
-        res.status(200).send({ success: false, message: "Empty contact list !!" });
-    } 
+    }
     else {
-        user_data.addUser(mobile, contacts);
-        res.status(200).send({
-            success : true
-        })
+        user_dao.addContactToShareLocation(from_mobile, to_mobile, to_name)
+            .then((successMessage) => {
+                res.status(200).send(successMessage);
+            }, (errorMessage) => {
+                res.status(200).send({
+                    success: false,
+                    message: errorMessage
+                });
+            });
+    }
+});
+
+app.post("/user/location/share/deletecontact", (req, res) => {
+    // console.log("Body: ", req.body);
+    from_mobile = req.body.from_mobile;
+    to_mobile = req.body.to_mobile;
+
+    logger.info("URL:/user/location/share/deletecontact, From Mobile:" + from_mobile + ", To Mobile:" + to_mobile);
+    // console.log(contacts, typeof contacts);
+    if (from_mobile == undefined || to_mobile == undefined) {
+        res.status(200).send({ success: false, message: "Entered mobile number is invalid !!" });
+    }
+    else {
+        user_dao.deleteContactToShareLocation(from_mobile, to_mobile, to_name)
+            .then((successMessage) => {
+                res.status(200).send(successMessage);
+            }, (errorMessage) => {
+                res.status(200).send(errorMessage);
+            });
     }
 });
 
@@ -87,7 +132,7 @@ app.put("/user/location/share", (req, res) => {
 app.post("/user/register", (req, res) => {
     console.log(req.body);
     user_details = req.body;
-    logger.info("URL:/user/register, Mobile:" + req.body.mobile +", Req:" + JSON.stringify(req.body));
+    logger.info("URL:/user/register, Mobile:" + req.body.mobile + ", Req:" + JSON.stringify(req.body));
     if (user_details.name == undefined || user_details.mobile == undefined || user_details.password == undefined) {
         res.status(200).send({ success: false, message: "Entered name, mobile number or password is invalid !!" });
     } else {
@@ -112,7 +157,7 @@ app.post("/user/register", (req, res) => {
  * Note - Mobile no. length is fixed of size 10
  */
 app.put("/user/login", (req, res) => {
-    logger.info("URL:/user/login, Mobile:" + req.body.mobile +", Req:" + JSON.stringify(req.body));
+    logger.info("URL:/user/login, Mobile:" + req.body.mobile + ", Req:" + JSON.stringify(req.body));
     login_details = req.body;
     if (login_details.mobile == undefined || login_details.password == undefined) {
         res.status(200).send({ success: false, message: "Enter valid login details !!" });

@@ -40,7 +40,7 @@ function isMobileNumberRegistered(mobile) {
           });
         } else if (results.length == 0) {
           reject({
-            success : false,
+            success: false,
             message: "User is not registered"
           });
         }
@@ -50,5 +50,92 @@ function isMobileNumberRegistered(mobile) {
   return dbPromise;
 }
 
+function addContactToShareLocation(from_mobile, to_mobile, to_name) {
+  var query = {
+    sql: "INSERT INTO shared_location_contacts(from_mobile, to_mobile, to_name) VALUES (?, ?, ?)",
+    values: [from_mobile, to_mobile, to_name]
+  };
+  const dbPromise = new Promise((resolve, reject) => {
+    db.executeQuery(query, (err, results, fields) => {
+      if (err) {
+        if(err.code == "ER_DUP_ENTRY") {
+          reject("Contact is already added");
+        } else {
+          reject(err.code + " " + err.message);
+        }
+      } else {
+        if (results.affectedRows == 1) {
+          resolve({
+            success: true
+          });
+        } else {
+          reject("Internal error");
+        }
+      }
+    });
+  });
+  return dbPromise;
+
+}
+
+function deleteContactToShareLocation(from_mobile, to_mobile) {
+  var query = {
+    sql: "DELETE FROM shared_location_contacts WHERE from_mobile= ? AND to_mobile= ?",
+    values: [from_mobile, to_mobile]
+  };
+  const dbPromise = new Promise((resolve, reject) => {
+    db.executeQuery(query, (err, results, fields) => {
+      if (err) {
+        reject(err.code + " " + err.message);
+      } else {
+        if (results.affectedRows == 1) {
+          resolve({
+            success: true
+          });
+        } else {
+          reject({
+            success: false,
+            message: "Contact is not present in location sharing list"
+          });
+        }
+      }
+    });
+  });
+  return dbPromise;
+}
+
+function getTrackingDetails(mobile) {
+  var query = {
+    sql: "SELECT from_mobile, to_mobile FROM shared_location_contacts WHERE from_mobile = ? OR to_mobile = ?",
+    values: [mobile, mobile]
+  };
+  const dbPromise = new Promise((resolve, reject) => {
+    db.executeQuery(query, (err, results, fields) => {
+      if (err) {
+        reject(err.code + " " + err.message);
+      } else {
+        console.log(results);
+        let sharingWith = new Array();
+        let tracking = new Array();
+        for(let res of results) {
+           if(res.from_mobile == mobile) {
+             sharingWith.push(res.to_mobile);
+           } else {
+             tracking.push(res.from_mobile);
+           }
+        }
+        resolve({
+           sharingWith : sharingWith,
+           tracking : tracking
+        })
+      }
+    });
+  });
+  return dbPromise;
+}
+
+module.exports.getTrackingDetails = getTrackingDetails;
+module.exports.deleteContactToShareLocation = deleteContactToShareLocation;
+module.exports.addContactToShareLocation = addContactToShareLocation;
 module.exports.registerUser = registerUser;
 module.exports.isMobileNumberRegistered = isMobileNumberRegistered;
