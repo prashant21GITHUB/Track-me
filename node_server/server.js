@@ -114,7 +114,6 @@ app.post("/user/location/share/deletecontact", (req, res) => {
     else {
         user_dao.deleteContactToShareLocation(from_mobile, to_mobile)
             .then((successMessage) => {
-                socket.removeContactFromRoom(to_mobile, from_mobile);
                 res.status(200).send(successMessage);
             }, (errorMessage) => {
                 res.status(200).send(errorMessage);
