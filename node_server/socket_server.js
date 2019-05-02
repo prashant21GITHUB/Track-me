@@ -4,6 +4,7 @@ const logger = require("./logger.js");
 
 const publishersMap = new Map();
 const connectionsMap = new Map();
+const lastLocationData = new Map();
 
 io.on('connection', function (socket) {
 
@@ -33,6 +34,7 @@ io.on('connection', function (socket) {
       //sending excluding sender
       logger.info("on:publish, data:" + JSON.stringify(data));
       socket.broadcast.to(data.mobile).emit(data.mobile, data);
+      lastLocationData.set(data.mobile, data);
       //sending including sender
       // io.in(data.mobile).emit(data.mobile, data);
     } //TODO: check how to handle this situation to optimize memory
@@ -48,6 +50,10 @@ io.on('connection', function (socket) {
     
     if (publishersMap.get(mobile)) {
       logger.info("on:subscribe, joining room:" + mobile+ ", Socket:"+socket.id);
+      let lastLocation = lastLocationData.get(mobile);
+      if(lastLocation != undefined) {
+        io.to(socket.id).emit(mobile, lastLocation);
+      }
       socket.join(mobile);
       ackFn({
         status: "connected"
