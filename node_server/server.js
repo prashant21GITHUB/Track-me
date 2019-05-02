@@ -3,6 +3,7 @@ const body_parser = require("body-parser");
 const user_dao = require("./user_dao.js");
 const login_dao = require("./login_dao.js");
 const user_data = require("./users_graph.js");
+const socket = require("./socket_server.js");
 
 const logger = require("./logger.js");
 const app = express();
@@ -114,6 +115,7 @@ app.post("/user/location/share/deletecontact", (req, res) => {
     else {
         user_dao.deleteContactToShareLocation(from_mobile, to_mobile)
             .then((successMessage) => {
+                socket.removeContactFromRoom(to_mobile, from_mobile);
                 res.status(200).send(successMessage);
             }, (errorMessage) => {
                 res.status(200).send(errorMessage);

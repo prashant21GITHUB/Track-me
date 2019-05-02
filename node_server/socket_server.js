@@ -104,3 +104,12 @@ function clearRoom(socket, mobile) {
     }
   });
 }
+
+
+function removeContactFromRoom(contact, room) {
+  socket_id = connectionsMap.get(contact);
+  io.to(socket_id).emit("publisherNotAvailable", room);
+  socket_id.leave(room);
+}
+
+module.exports.removeContactFromRoom = removeContactFromRoom;
