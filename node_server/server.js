@@ -112,7 +112,7 @@ app.post("/user/location/share/deletecontact", (req, res) => {
         res.status(200).send({ success: false, message: "Entered mobile number is invalid !!" });
     }
     else {
-        user_dao.deleteContactToShareLocation(from_mobile, to_mobile, to_name)
+        user_dao.deleteContactToShareLocation(from_mobile, to_mobile)
             .then((successMessage) => {
                 res.status(200).send(successMessage);
             }, (errorMessage) => {
