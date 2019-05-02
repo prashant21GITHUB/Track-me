@@ -56,7 +56,8 @@ io.on('connection', function (socket) {
       }
       socket.join(mobile);
       ackFn({
-        status: "connected"
+        status: "connected",
+        lastLocation : lastLocation
       })
     } else {
       logger.info("on:subscribe, No room:" + mobile+ ", Socket:"+socket.id);
