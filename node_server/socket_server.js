@@ -80,6 +80,19 @@ io.on('connection', function (socket) {
     
   });
 
+  socket.on('addContact', function (data) {
+    contact_to_add = data.contactToAdd;
+    room = data.publisher;
+    socket_id = connectionsMap.get(contact_to_add);
+    if(socket_id != undefined) {
+      io.to(socket_id).emit("publisherAvailable", room);
+      logger.info("on:addContact, Add contact" + contact_to_add + ", Publisher:" + room);
+    } else {
+      logger.info("on:addContact, No socket connection for contact to be added, ContactToAdd: " + contact_to_add + ", Publisher:" + room);
+    }
+    
+  });
+
   socket.on('disconnect', function () {
     logger.info("on:disconnect, Socket:" + socket.id);
     // stopPublishing(socket);
