@@ -66,6 +66,20 @@ io.on('connection', function (socket) {
     socket.leave(mobile);
   });
 
+  socket.on('removeContact', function (data) {
+    contact_to_remove = data.contactToRemove;
+    room = data.publisher;
+    socket_id = connectionsMap.get(contact_to_remove);
+    if(socket_id != undefined) {
+      io.to(socket_id).emit("publisherNotAvailable", room);
+      socket_id.leave(room);
+      logger.info("on:removeContact, Remove contact" + contact_to_remove + ", Publisher:" + room);
+    } else {
+      logger.info("on:removeContact, No socket connection for contact to be removed, ContactToRemove: " + contact_to_remove + ", Publisher:" + room);
+    }
+    
+  });
+
   socket.on('disconnect', function () {
     logger.info("on:disconnect, Socket:" + socket.id);
     // stopPublishing(socket);
@@ -104,12 +118,3 @@ function clearRoom(socket, mobile) {
     }
   });
 }
-
-
-function removeContactFromRoom(contact, room) {
-  socket_id = connectionsMap.get(contact);
-  io.to(socket_id).emit("publisherNotAvailable", room);
-  socket_id.leave(room);
-}
-
-module.exports.removeContactFromRoom = removeContactFromRoom;
