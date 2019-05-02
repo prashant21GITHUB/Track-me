@@ -72,7 +72,7 @@ io.on('connection', function (socket) {
     socket_id = connectionsMap.get(contact_to_remove);
     if(socket_id != undefined) {
       io.to(socket_id).emit("publisherNotAvailable", room);
-      socket_id.leave(room);
+      io.sockets.sockets[socket_id].leave(room);
       logger.info("on:removeContact, Remove contact" + contact_to_remove + ", Publisher:" + room);
     } else {
       logger.info("on:removeContact, No socket connection for contact to be removed, ContactToRemove: " + contact_to_remove + ", Publisher:" + room);
