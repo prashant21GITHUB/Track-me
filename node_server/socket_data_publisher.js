@@ -2,7 +2,7 @@ var io = require("socket.io-client")
 
 var socket = io.connect('http://localhost:3000');
 
-// socket.emit('startPublish', '7767947111')
+socket.emit('startPublish', ['8553016002', '7767947111'])
 
 // socket.emit('publish', {
     
@@ -18,13 +18,13 @@ var socket = io.connect('http://localhost:3000');
 //     });
 // })
 
-// socket.emit('publish', {
+socket.emit('publish', {
     
-//     mobile: '9540181912',
-//     lat: 28.6417,
-//     lng: 77.3575
+    mobile: '8553016002',
+    lat: 28.6417,
+    lng: 77.3575
 
-// })
+})
 
 socket.on('7767947111', (data) => {
     console.log(data);
