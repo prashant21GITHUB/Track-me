@@ -68,9 +68,13 @@ io.on('connection', function (socket) {
     }
   });
 
-  socket.on('unsubscribe', function (mobile) {
+  socket.on('unsubscribe', function (mobile, ackFn) {
     logger.info("on:unsubscribe, Leaving room:" + mobile + ", Socket:" + socket.id);
     socket.leave(mobile);
+    ackFn({
+      status: "success"
+    }
+    )
   });
 
   socket.on('removeContact', function (data) {
