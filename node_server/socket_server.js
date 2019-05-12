@@ -5,6 +5,7 @@ const logger = require("./logger.js");
 const publishersMap = new Map();
 const connectionsMap = new Map();
 const lastLocationData = new Map();
+const socketToPublisherMap = new Map();
 
 io.on('connection', function (socket) {
   logger.info("on:connection, Socket:" + socket.id);
@@ -18,6 +19,7 @@ io.on('connection', function (socket) {
     publisher = mobile_arr[0];
     logger.info("on:startPublish, Mobile:" + publisher + ", Subscribers:" + mobile_arr.slice(1));
     publishersMap.set(publisher, socket.id);
+    socketToPublisherMap.set(socket.id, publisher);
     for (let i = 1; i < mobile_arr.length; i++) {
       socket_id = connectionsMap.get(mobile_arr[i]);
       if (socket_id != undefined) {
@@ -44,6 +46,14 @@ io.on('connection', function (socket) {
     logger.info("on:stopPublish, Mobile:" + mobile);
     clearRoom(socket, mobile);
     publishersMap.delete(mobile);
+    socketToPublisherMap.delete(socket.id);
+  });
+
+  socket.on('notLive', function (mobile) {
+    logger.info("on:notLive, Mobile:" + mobile);
+    logger.info("Sending not live event, room:" + mobile);
+    logger.info("emit:notLive, Mobile:" + mobile);
+    socket.broadcast.to(room).emit("notLive", room);
   });
 
   socket.on('subscribe', function (mobile, ackFn) {
@@ -106,7 +116,13 @@ io.on('connection', function (socket) {
 
   socket.on('disconnect', function () {
     logger.info("on:disconnect, Socket:" + socket.id);
-    connectionsMap.delete()
+    // connectionsMap.delete()
+    if(socketToPublisherMap.has(socket.id)) {
+      let mobile = socketToPublisherMap.get(socket.id);
+      logger.info("Sending not live event due to disconnect, room:" + mobile);
+      logger.info("emit:notLive, Mobile:" + mobile);
+      io.broadcast.to(room).emit("notLive", mobile);
+    }
   });
 
 });
