@@ -121,7 +121,7 @@ io.on('connection', function (socket) {
       let mobile = socketToPublisherMap.get(socket.id);
       logger.info("Sending not live event due to disconnect, room:" + mobile);
       logger.info("emit:notLive, Mobile:" + mobile);
-      io.broadcast.to(room).emit("notLive", mobile);
+      io.to(mobile).emit("notLive", mobile);
     }
   });
 
