@@ -134,7 +134,7 @@ app.post("/user/location/track/deletecontact", (req, res) => {
         res.status(200).send({ success: false, message: "Tracking mobile number is invalid !!" });
     }
     else {
-        user_dao.deleteContactToShareLocation(mobile, contact_to_delete)
+        user_dao.deleteContactFromTrackingContacts(mobile, contact_to_delete)
             .then((successMessage) => {
                 res.status(200).send(successMessage);
             }, (errorMessage) => {
