@@ -60,7 +60,39 @@ function addContactToShareLocation(from_mobile, to_mobile, to_name) {
   const dbPromise = new Promise((resolve, reject) => {
     db.executeQuery(query, (err, results, fields) => {
       if (err) {
-        if(err.code == "ER_DUP_ENTRY") {
+        if (err.code == "ER_DUP_ENTRY") {
+          reject("Contact is already added");
+        } else {
+          reject(err.code + " " + err.message);
+        }
+      } else {
+        if (results.affectedRows == 1) {
+          resolve({
+            success: true
+          });
+        } else if (results.affectedRows == 0) {
+          reject("Contact is not registered");
+        } else {
+          reject("Internal error");
+        }
+      }
+    });
+  });
+  return dbPromise;
+
+}
+
+function addContactToTrackLocation(mobile, tracking_contact_number) {
+  var query = {
+    // sql: "INSERT INTO shared_location_contacts(from_mobile, to_mobile, to_name) VALUES (?, ?, ?)",
+    //Also checking If contact is registered or not
+    sql: "INSERT INTO tracking_contacts(mobile, tracking) SELECT ?, ? FROM user WHERE mobile = ?",
+    values: [mobile, tracking_contact_number, tracking_contact_number]
+  };
+  const dbPromise = new Promise((resolve, reject) => {
+    db.executeQuery(query, (err, results, fields) => {
+      if (err) {
+        if (err.code == "ER_DUP_ENTRY") {
           reject("Contact is already added");
         } else {
           reject(err.code + " " + err.message);
@@ -108,29 +140,76 @@ function deleteContactToShareLocation(from_mobile, to_mobile) {
   return dbPromise;
 }
 
-function getTrackingDetails(mobile) {
+function deleteContactFromTrackingContacts(mobile, tracking_contact_number) {
   var query = {
-    sql: "SELECT from_mobile, to_mobile FROM shared_location_contacts WHERE from_mobile = ? OR to_mobile = ?",
-    values: [mobile, mobile]
+    sql: "DELETE FROM tracking_contacts WHERE mobile = ? AND tracking = ?",
+    values: [mobile, tracking_contact_number]
   };
   const dbPromise = new Promise((resolve, reject) => {
     db.executeQuery(query, (err, results, fields) => {
       if (err) {
         reject(err.code + " " + err.message);
       } else {
+        if (results.affectedRows == 1) {
+          resolve({
+            success: true
+          });
+        } else {
+          reject({
+            success: false,
+            message: "Contact is not present in tracking contacts list"
+          });
+        }
+      }
+    });
+  });
+  return dbPromise;
+}
+
+function getTrackingDetails(mobile) {
+  let query = {
+    sql: "SELECT to_mobile FROM shared_location_contacts WHERE from_mobile = ?",
+    values: [mobile]
+  };
+  const dbPromise = new Promise((resolve, reject) => {
+    db.executeQuery(query, (err, results, fields) => {
+      if (err) {
+        reject(err.code + " " + err.message);
+      } else {
+
         let sharingWith = new Array();
         let tracking = new Array();
-        for(let res of results) {
-           if(res.from_mobile == mobile) {
-             sharingWith.push(res.to_mobile);
-           } else {
-             tracking.push(res.from_mobile);
-           }
+        for (let res of results) {
+          sharingWith.push(res.to_mobile);
         }
-        resolve({
-           sharingWith : sharingWith,
-           tracking : tracking
-        })
+        let query = {
+          sql: "SELECT tracking FROM tracking_contacts WHERE mobile = ?",
+          values: [mobile]
+        };
+        let innerPromise = new Promise((resolve, reject) => {
+          db.executeQuery(query, (err, results, fields) => {
+            if (err) {
+              reject(err.code + " " + err.message);
+            } else {
+              let tracking = new Array();
+              for (let res of results) {
+                tracking.push(res.tracking);
+              }
+              resolve(tracking);
+            }
+          })
+        });
+        innerPromise.then((tracking) => {
+          resolve({
+            sharingWith: sharingWith,
+            tracking: tracking
+          })
+        }, (err) => {
+          resolve({
+            sharingWith: sharingWith,
+            tracking: []
+          })
+        });
       }
     });
   });
@@ -142,3 +221,5 @@ module.exports.deleteContactToShareLocation = deleteContactToShareLocation;
 module.exports.addContactToShareLocation = addContactToShareLocation;
 module.exports.registerUser = registerUser;
 module.exports.isMobileNumberRegistered = isMobileNumberRegistered;
+module.exports.deleteContactFromTrackingContacts = deleteContactFromTrackingContacts;
+module.exports.addContactToTrackLocation = addContactToTrackLocation;
