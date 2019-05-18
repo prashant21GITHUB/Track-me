@@ -80,16 +80,16 @@ app.put("/user/track/details", (req, res) => {
 
 app.post("/user/location/share/addcontact", (req, res) => {
     // console.log("Body: ", req.body);
-    from_mobile = req.body.from_mobile;
-    to_mobile = req.body.to_mobile;
+    mobile = req.body.mobile;
+    contact_to_add = req.body.contact_to_add;
     to_name = req.body.to_name;
-    logger.info("URL:/user/location/share/addcontact, From Mobile:" + from_mobile + ", To Mobile:" + to_mobile + ", To Name:" + to_name);
+    logger.info("URL:/user/location/share/addcontact, From Mobile:" + mobile + ", To Mobile:" + contact_to_add + ", To Name:" + to_name);
     // console.log(contacts, typeof contacts);
-    if (from_mobile == undefined || to_mobile == undefined || to_name == undefined) {
+    if (contact_to_add == undefined || to_name == undefined) {
         res.status(200).send({ success: false, message: "Entered mobile number is invalid !!" });
     }
     else {
-        user_dao.addContactToShareLocation(from_mobile, to_mobile, to_name)
+        user_dao.addContactToShareLocation(mobile, contact_to_add, to_name)
             .then((successMessage) => {
                 res.status(200).send(successMessage);
             }, (errorMessage) => {
@@ -104,14 +104,14 @@ app.post("/user/location/share/addcontact", (req, res) => {
 app.post("/user/location/track/addcontact", (req, res) => {
     // console.log("Body: ", req.body);
     mobile = req.body.mobile;
-    tracking = req.body.tracking;
-    logger.info("URL:/user/location/track/addcontact, Mobile:" + mobile + ", Tracking:" + tracking);
+    contact_to_add = req.body.contact_to_add;
+    logger.info("URL:/user/location/track/addcontact, Mobile:" + mobile + ", Tracking:" + contact_to_add);
     // console.log(contacts, typeof contacts);
-    if (tracking == undefined) {
+    if (contact_to_add == undefined) {
         res.status(200).send({ success: false, message: "Tracking mobile number is invalid !!" });
     }
     else {
-        user_dao.addContactToTrackLocation(mobile, tracking)
+        user_dao.addContactToTrackLocation(mobile, contact_to_add)
             .then((successMessage) => {
                 res.status(200).send(successMessage);
             }, (errorMessage) => {
@@ -126,15 +126,15 @@ app.post("/user/location/track/addcontact", (req, res) => {
 app.post("/user/location/track/deletecontact", (req, res) => {
     // console.log("Body: ", req.body);
     mobile = req.body.mobile;
-    tracking = req.body.tracking;
+    contact_to_delete = req.body.contact_to_delete;
 
-    logger.info("URL:/user/location/track/deletecontact, Mobile:" + mobile + ", Tracking:" + tracking);
+    logger.info("URL:/user/location/track/deletecontact, Mobile:" + mobile + ", Tracking:" + contact_to_delete);
     // console.log(contacts, typeof contacts);
-    if (tracking == undefined) {
+    if (contact_to_delete == undefined) {
         res.status(200).send({ success: false, message: "Tracking mobile number is invalid !!" });
     }
     else {
-        user_dao.deleteContactToShareLocation(mobile, tracking)
+        user_dao.deleteContactToShareLocation(mobile, contact_to_delete)
             .then((successMessage) => {
                 res.status(200).send(successMessage);
             }, (errorMessage) => {
@@ -145,16 +145,16 @@ app.post("/user/location/track/deletecontact", (req, res) => {
 
 app.post("/user/location/share/deletecontact", (req, res) => {
     // console.log("Body: ", req.body);
-    from_mobile = req.body.from_mobile;
-    to_mobile = req.body.to_mobile;
+    mobile = req.body.mobile;
+    contact_to_delete = req.body.contact_to_delete;
 
-    logger.info("URL:/user/location/share/deletecontact, From Mobile:" + from_mobile + ", To Mobile:" + to_mobile);
+    logger.info("URL:/user/location/share/deletecontact, From Mobile:" + mobile + ", To Mobile:" + contact_to_delete);
     // console.log(contacts, typeof contacts);
-    if (from_mobile == undefined || to_mobile == undefined) {
+    if (contact_to_delete == undefined) {
         res.status(200).send({ success: false, message: "Entered mobile number is invalid !!" });
     }
     else {
-        user_dao.deleteContactToShareLocation(from_mobile, to_mobile)
+        user_dao.deleteContactToShareLocation(mobile, contact_to_delete)
             .then((successMessage) => {
                 res.status(200).send(successMessage);
             }, (errorMessage) => {
