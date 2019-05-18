@@ -80,8 +80,8 @@ app.put("/user/track/details", (req, res) => {
 
 app.post("/user/location/share/addcontact", (req, res) => {
     // console.log("Body: ", req.body);
-    mobile = req.body.mobile;
-    contact_to_add = req.body.contact_to_add;
+    mobile = req.body.loggedInMobile;
+    contact_to_add = req.body.contact;
     to_name = req.body.to_name;
     logger.info("URL:/user/location/share/addcontact, From Mobile:" + mobile + ", To Mobile:" + contact_to_add + ", To Name:" + to_name);
     // console.log(contacts, typeof contacts);
@@ -103,8 +103,8 @@ app.post("/user/location/share/addcontact", (req, res) => {
 
 app.post("/user/location/track/addcontact", (req, res) => {
     // console.log("Body: ", req.body);
-    mobile = req.body.mobile;
-    contact_to_add = req.body.contact_to_add;
+    mobile = req.body.loggedInMobile;
+    contact_to_add = req.body.contact;
     logger.info("URL:/user/location/track/addcontact, Mobile:" + mobile + ", Tracking:" + contact_to_add);
     // console.log(contacts, typeof contacts);
     if (contact_to_add == undefined) {
@@ -125,8 +125,8 @@ app.post("/user/location/track/addcontact", (req, res) => {
 
 app.post("/user/location/track/deletecontact", (req, res) => {
     // console.log("Body: ", req.body);
-    mobile = req.body.mobile;
-    contact_to_delete = req.body.contact_to_delete;
+    mobile = req.body.loggedInMobile;
+    contact_to_delete = req.body.contact;
 
     logger.info("URL:/user/location/track/deletecontact, Mobile:" + mobile + ", Tracking:" + contact_to_delete);
     // console.log(contacts, typeof contacts);
@@ -145,8 +145,8 @@ app.post("/user/location/track/deletecontact", (req, res) => {
 
 app.post("/user/location/share/deletecontact", (req, res) => {
     // console.log("Body: ", req.body);
-    mobile = req.body.mobile;
-    contact_to_delete = req.body.contact_to_delete;
+    mobile = req.body.loggedInMobile;
+    contact_to_delete = req.body.contact;
 
     logger.info("URL:/user/location/share/deletecontact, From Mobile:" + mobile + ", To Mobile:" + contact_to_delete);
     // console.log(contacts, typeof contacts);
