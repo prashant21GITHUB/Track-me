@@ -101,6 +101,48 @@ app.post("/user/location/share/addcontact", (req, res) => {
     }
 });
 
+app.post("/user/location/track/addcontact", (req, res) => {
+    // console.log("Body: ", req.body);
+    mobile = req.body.mobile;
+    tracking = req.body.tracking;
+    logger.info("URL:/user/location/track/addcontact, Mobile:" + mobile + ", Tracking:" + tracking);
+    // console.log(contacts, typeof contacts);
+    if (tracking == undefined) {
+        res.status(200).send({ success: false, message: "Tracking mobile number is invalid !!" });
+    }
+    else {
+        user_dao.addContactToTrackLocation(mobile, tracking)
+            .then((successMessage) => {
+                res.status(200).send(successMessage);
+            }, (errorMessage) => {
+                res.status(200).send({
+                    success: false,
+                    message: errorMessage
+                });
+            });
+    }
+});
+
+app.post("/user/location/track/deletecontact", (req, res) => {
+    // console.log("Body: ", req.body);
+    mobile = req.body.mobile;
+    tracking = req.body.tracking;
+
+    logger.info("URL:/user/location/track/deletecontact, Mobile:" + mobile + ", Tracking:" + tracking);
+    // console.log(contacts, typeof contacts);
+    if (tracking == undefined) {
+        res.status(200).send({ success: false, message: "Tracking mobile number is invalid !!" });
+    }
+    else {
+        user_dao.deleteContactToShareLocation(mobile, tracking)
+            .then((successMessage) => {
+                res.status(200).send(successMessage);
+            }, (errorMessage) => {
+                res.status(200).send(errorMessage);
+            });
+    }
+});
+
 app.post("/user/location/share/deletecontact", (req, res) => {
     // console.log("Body: ", req.body);
     from_mobile = req.body.from_mobile;
