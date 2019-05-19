@@ -47,15 +47,22 @@ app.put("/user/track/details", (req, res) => {
     if (mobile == undefined) {
         res.status(200).send({ success: false, message: "Entered mobile number is invalid !!" });
     } else {
-        user_dao.getTrackingDetails(mobile).then((tracking_details) => {
-                res.status(200).send({
-                    success: true,
-                    sharingWith: tracking_details.sharingWith,
-                    tracking: tracking_details.tracking
-                })
-        }, (error) => {
-            res.status(200).send({ success: false, message: error });
-        });
+        // user_dao.getTrackingDetails(mobile).then((tracking_details) => {
+        //         res.status(200).send({
+        //             success: true,
+        //             sharingWith: tracking_details.sharingWith,
+        //             tracking: tracking_details.tracking
+        //         })
+        // }, (error) => {
+        //     res.status(200).send({ success: false, message: error });
+        // });
+        details = user_dao.getTrackingDetails(mobile);
+        details.then((tracking_details) => {
+            res.status(200).send(tracking_details);
+        }, (error_message)=> {
+            res.status(200).send(error_message);
+        })
+       
     }
 });
 

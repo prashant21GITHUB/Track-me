@@ -166,52 +166,73 @@ function deleteContactFromTrackingContacts(mobile, tracking_contact_number) {
   return dbPromise;
 }
 
-function getTrackingDetails(mobile) {
+async function getTrackingDetails(mobile) {
+
+  try {
+    sharing_contacts = await getSharingContacts(mobile);
+    console.log("sharing with :" + sharing_contacts);
+    tracking = await getTrackingContacts(mobile);
+    console.log("tracking with :" + tracking);
+    result = {
+      sharingWith: sharing_contacts,
+      tracking: tracking,
+      success : true
+    };
+    console.log("result :" , result);
+    return result;
+  } catch(err) {
+    return {
+      success : false,
+      message :err.message
+    }
+  }
+
+}
+
+function getSharingContacts(mobile) {
   let query = {
     sql: "SELECT sharing_with FROM sharing_contacts WHERE mobile = ?",
     values: [mobile]
   };
-  const dbPromise = new Promise((resolve, reject) => {
+
+  let dbPromise = new Promise((resolve, reject) => {
     db.executeQuery(query, (err, results, fields) => {
       if (err) {
         reject(err.code + " " + err.message);
       } else {
-
         const sharingWith = new Array();
-        
         for (let res of results) {
           sharingWith.push(res.sharing_with);
         }
-        console.log("Sharing list db results: " + results);
-        console.log("Sharing list: " + sharingWith);
-        let query = {
-          sql: "SELECT tracking FROM tracking_contacts WHERE mobile = ?",
-          values: [mobile]
-        };
-        let innerPromise = new Promise((resolve, reject) => {
-          db.executeQuery(query, (err, results, fields) => {
-            if (err) {
-              reject(err.code + " " + err.message);
-            } else {
-              let tracking = new Array();
-              for (let res of results) {
-                tracking.push(res.tracking);
-              }
-              console.log("Tracking: " + tracking);
-              resolve(tracking);
-            }
-          })
-        });
-        innerPromise.then((tracking) => {
-          resolve({
-            sharingWith: sharingWith,
-            tracking: tracking
-          })
-        }, (err) => {
-          reject(err.code + " " + err.message)
-        });
+      
+        resolve(sharingWith);
       }
-    });
+     }
+    );
+  });
+  return dbPromise;
+}
+
+function getTrackingContacts(mobile) {
+  let query = {
+    sql: "SELECT tracking FROM tracking_contacts WHERE mobile = ?",
+    values: [mobile]
+  };
+
+  let dbPromise = new Promise((resolve, reject) => {
+    db.executeQuery(query, (err, results, fields) => {
+      if (err) {
+        reject(err.code + " " + err.message);
+      } else {
+        const tracking = new Array();
+        for (let res of results) {
+          tracking.push(res.tracking);
+        }
+        console.log("tracking with :" + tracking);
+        resolve(tracking);
+      }
+     }
+    );
   });
   return dbPromise;
 }
