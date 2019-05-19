@@ -148,7 +148,7 @@ app.post("/user/location/share/deletecontact", (req, res) => {
     mobile = req.body.loggedInMobile;
     contact_to_delete = req.body.contact;
 
-    logger.info("URL:/user/location/share/deletecontact, From Mobile:" + mobile + ", To Mobile:" + contact_to_delete);
+    logger.info("URL:/user/location/share/deletecontact, Mobile:" + mobile + ", Contact:" + contact_to_delete);
     // console.log(contacts, typeof contacts);
     if (contact_to_delete == undefined) {
         res.status(200).send({ success: false, message: "Entered mobile number is invalid !!" });

@@ -50,12 +50,12 @@ function isMobileNumberRegistered(mobile) {
   return dbPromise;
 }
 
-function addContactToShareLocation(from_mobile, to_mobile, to_name) {
+function addContactToShareLocation(mobile, sharing_with, to_name) {
   var query = {
     // sql: "INSERT INTO shared_location_contacts(from_mobile, to_mobile, to_name) VALUES (?, ?, ?)",
     //Also checking If contact is registered or not
-    sql: "INSERT INTO shared_location_contacts(from_mobile, to_mobile, to_name) SELECT ?, ?, ? FROM user WHERE mobile = ?",
-    values: [from_mobile, to_mobile, to_name, to_mobile]
+    sql: "INSERT INTO sharing_contacts (mobile, sharing_with) SELECT ?, ? FROM user WHERE mobile = ?",
+    values: [mobile, sharing_with, sharing_with]
   };
   const dbPromise = new Promise((resolve, reject) => {
     db.executeQuery(query, (err, results, fields) => {
@@ -114,10 +114,10 @@ function addContactToTrackLocation(mobile, tracking_contact_number) {
 
 }
 
-function deleteContactToShareLocation(from_mobile, to_mobile) {
+function deleteContactToShareLocation(mobile, sharing_with) {
   var query = {
-    sql: "DELETE FROM shared_location_contacts WHERE from_mobile= ? AND to_mobile= ?",
-    values: [from_mobile, to_mobile]
+    sql: "DELETE FROM sharing_contacts WHERE mobile = ? AND sharing_with = ?",
+    values: [mobile, sharing_with]
   };
   const dbPromise = new Promise((resolve, reject) => {
     db.executeQuery(query, (err, results, fields) => {
@@ -168,7 +168,7 @@ function deleteContactFromTrackingContacts(mobile, tracking_contact_number) {
 
 function getTrackingDetails(mobile) {
   let query = {
-    sql: "SELECT to_mobile FROM shared_location_contacts WHERE from_mobile = ?",
+    sql: "SELECT sharing_with FROM sharing_contacts WHERE mobile = ?",
     values: [mobile]
   };
   const dbPromise = new Promise((resolve, reject) => {
@@ -180,7 +180,7 @@ function getTrackingDetails(mobile) {
         const sharingWith = new Array();
         
         for (let res of results) {
-          sharingWith.push(res.to_mobile);
+          sharingWith.push(res.sharing_with);
         }
         console.log("Sharing list db results: " + results);
         console.log("Sharing list: " + sharingWith);
