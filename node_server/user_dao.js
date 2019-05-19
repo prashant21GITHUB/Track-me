@@ -182,6 +182,8 @@ function getTrackingDetails(mobile) {
         for (let res of results) {
           sharingWith.push(res.to_mobile);
         }
+        console.log("Sharing list db results: " + results);
+        console.log("Sharing list: " + sharingWith);
         let query = {
           sql: "SELECT tracking FROM tracking_contacts WHERE mobile = ?",
           values: [mobile]
@@ -195,6 +197,7 @@ function getTrackingDetails(mobile) {
               for (let res of results) {
                 tracking.push(res.tracking);
               }
+              console.log("Tracking: " + tracking);
               resolve(tracking);
             }
           })
