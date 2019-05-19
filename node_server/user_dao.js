@@ -177,7 +177,7 @@ function getTrackingDetails(mobile) {
         reject(err.code + " " + err.message);
       } else {
 
-        let sharingWith = new Array();
+        const sharingWith = new Array();
         
         for (let res of results) {
           sharingWith.push(res.to_mobile);
