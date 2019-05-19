@@ -178,7 +178,7 @@ function getTrackingDetails(mobile) {
       } else {
 
         let sharingWith = new Array();
-        let tracking = new Array();
+        
         for (let res of results) {
           sharingWith.push(res.to_mobile);
         }
@@ -205,10 +205,7 @@ function getTrackingDetails(mobile) {
             tracking: tracking
           })
         }, (err) => {
-          resolve({
-            sharingWith: sharingWith,
-            tracking: []
-          })
+          reject(err.code + " " + err.message)
         });
       }
     });
