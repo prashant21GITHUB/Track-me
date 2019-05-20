@@ -73,6 +73,7 @@ io.on('connection', function (socket) {
           }
         }
         activeSubscribers.get(mobile).add(subscriber);
+        console.log("subscribe: activeSubscribers - " + activeSubscribers);
       }
       socket.join(mobile);
       ackFn({
@@ -106,6 +107,7 @@ io.on('connection', function (socket) {
           io.to(socket_id).emit("stopSendingLocation", mobile);
         }
       }
+      console.log("unsubscribe: activeSubscribers - " + activeSubscribers);
       
     }
     ackFn({
@@ -127,6 +129,7 @@ io.on('connection', function (socket) {
         activeSubscribers.get(mobile).delete(contact_to_remove);
       }
       logger.info("on:removeContact, Remove contact" + contact_to_remove + ", Publisher:" + room);
+      console.log("removeContact: activeSubscribers - " + activeSubscribers);
     } else {
       logger.info("on:removeContact, No socket connection for contact to be removed, ContactToRemove: " + contact_to_remove + ", Publisher:" + room);
     }
