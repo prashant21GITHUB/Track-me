@@ -6,6 +6,7 @@ const publishersMap = new Map();
 const connectionsMap = new Map();
 const lastLocationData = new Map();
 const socketToPublisherMap = new Map();
+const activeSubscribers = new Map();
 
 io.on('connection', function (socket) {
   logger.info("on:connection, Socket:" + socket.id);
@@ -15,8 +16,8 @@ io.on('connection', function (socket) {
   });
 
   socket.on('startPublish', (mobile_arr) => {
-
     publisher = mobile_arr[0];
+    activeSubscribers.set(publisher, new Set());
     logger.info("on:startPublish, Mobile:" + publisher + ", Subscribers:" + mobile_arr.slice(1));
     publishersMap.set(publisher, socket.id);
     socketToPublisherMap.set(socket.id, publisher);
@@ -46,6 +47,7 @@ io.on('connection', function (socket) {
     logger.info("on:stopPublish, Mobile:" + mobile);
     clearRoom(socket, mobile);
     publishersMap.delete(mobile);
+    activeSubscribers.delete(mobile);
     socketToPublisherMap.delete(socket.id);
   });
 
@@ -56,10 +58,21 @@ io.on('connection', function (socket) {
     socket.broadcast.to(room).emit("notLive", room);
   });
 
-  socket.on('subscribe', function (mobile, ackFn) {
+  socket.on('subscribe', function (data, ackFn) {
+    const mobile = data.publisher;
+    const subscriber = data.subscriber;
     const lastLocation = lastLocationData.get(mobile);
     if (publishersMap.has(mobile)) {
       logger.info("on:subscribe, joining room:" + mobile + ", Socket:" + socket.id);
+      if(activeSubscribers.has(mobile)) {
+        if(activeSubscribers.get(mobile).size == 0) {
+          socket_id = connectionsMap.get(mobile);
+          if(socket_id != undefined) {
+            io.to(socket_id).emit("startSendingLocation", mobile);
+          }
+        }
+        activeSubscribers.get(mobile).add(subscriber);
+      }
       socket.join(mobile);
       ackFn({
         status: "connected",
@@ -78,9 +91,21 @@ io.on('connection', function (socket) {
     }
   });
 
-  socket.on('unsubscribe', function (mobile, ackFn) {
+  socket.on('unsubscribe', function (data, ackFn) {
     logger.info("on:unsubscribe, Leaving room:" + mobile + ", Socket:" + socket.id);
+    const mobile = data.publisher;
+    const subscriber = data.subscriber;
     socket.leave(mobile);
+    if(activeSubscribers.has(mobile)) {
+      activeSubscribers.get(mobile).delete(subscriber);
+      if(activeSubscribers.get(mobile).size == 0) {
+        socket_id = connectionsMap.get(mobile);
+        if(socket_id != undefined) {
+          io.to(socket_id).emit("stopSendingLocation", mobile);
+        }
+      }
+      
+    }
     ackFn({
       status: "success"
     }
@@ -95,6 +120,9 @@ io.on('connection', function (socket) {
       io.to(socket_id).emit("publisherNotAvailable", room);
       if(io.sockets.sockets[socket_id] != undefined) {
         io.sockets.sockets[socket_id].leave(room);
+      }
+      if(activeSubscribers.has(room)) {
+        activeSubscribers.get(mobile).delete(contact_to_remove);
       }
       logger.info("on:removeContact, Remove contact" + contact_to_remove + ", Publisher:" + room);
     } else {
