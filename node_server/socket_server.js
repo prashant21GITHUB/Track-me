@@ -92,9 +92,9 @@ io.on('connection', function (socket) {
   });
 
   socket.on('unsubscribe', function (data, ackFn) {
-    logger.info("on:unsubscribe, Leaving room:" + mobile + ", Socket:" + socket.id);
     const mobile = data.publisher;
     const subscriber = data.subscriber;
+    logger.info("on:unsubscribe, Leaving room:" + mobile + ", Socket:" + socket.id);
     socket.leave(mobile);
     if(activeSubscribers.has(mobile)) {
       activeSubscribers.get(mobile).delete(subscriber);
