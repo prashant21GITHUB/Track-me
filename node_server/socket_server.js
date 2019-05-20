@@ -68,6 +68,7 @@ io.on('connection', function (socket) {
         if(activeSubscribers.get(mobile).size == 0) {
           socket_id = connectionsMap.get(mobile);
           if(socket_id != undefined) {
+            logger.info("emit:startSendingLocation, Mobile:" + mobile);
             io.to(socket_id).emit("startSendingLocation", mobile);
           }
         }
@@ -101,6 +102,7 @@ io.on('connection', function (socket) {
       if(activeSubscribers.get(mobile).size == 0) {
         socket_id = connectionsMap.get(mobile);
         if(socket_id != undefined) {
+          logger.info("emit:stopSendingLocation, Mobile:" + mobile);
           io.to(socket_id).emit("stopSendingLocation", mobile);
         }
       }
