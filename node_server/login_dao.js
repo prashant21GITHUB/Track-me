@@ -76,6 +76,28 @@ function addFCMToken(mobile, token) {
     return dbPromise;
 }
 
+function getFCMToken(mobile) {
+    let query = {
+        sql: "SELECT token FROM fcm_tokens WHERE mobile = ?",
+        values: [mobile]
+    }
+    let dbPromise = new Promise((resolve, reject) => {
+        db.executeQuery(query, (err, results, fields) => {
+            if (err) {
+                reject(err.code + " " + err.message);
+            } else {
+                if (results.length == 1) {
+                    resolve(results[0].token);
+                } else {
+                    reject("Token not found for mobile " + mobile);
+                }
+            }
+        });
+    });
+    return dbPromise;
+}
+
 module.exports.login = login;
 module.exports.logout = logout;
 module.exports.addFCMToken = addFCMToken;
+module.exports.getFCMToken = getFCMToken

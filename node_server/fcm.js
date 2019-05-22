@@ -1,34 +1,73 @@
 const FCM = require('fcm-node');
 const PropertiesReader = require('properties-reader');
+const login_dao = require('./login_dao.js');
 
 const properties = PropertiesReader('./res/fcm_keys.properties');
 const SERVER_KEY = properties.get('SERVER_KEY');
-
-console.log("Key", SERVER_KEY);
 const fcm = new FCM(SERVER_KEY);
 
-token = "cUzKdb5gQ1I:APA91bEivoHXLIicYEV7CdAS21JeW0IUyzy5JbSmMTmuJ_C4hEsfkbKVHNs70WZElV1zO5qK3r1igpRqFkYz5aaQKePM6LrsAThcbJRySzwHHovHmu49gwb-1-OYu-8bPzh6aVbzJKpR";
-console.log(token.length);
-
-var message = { //this may vary according to the message type (single recipient, multicast, topic, et cetera)
-    to: "cUzKdb5gQ1I:APA91bEivoHXLIicYEV7CdAS21JeW0IUyzy5JbSmMTmuJ_C4hEsfkbKVHNs70WZElV1zO5qK3r1igpRqFkYz5aaQKePM6LrsAThcbJRySzwHHovHmu49gwb-1-OYu-8bPzh6aVbzJKpR", 
-    collapse_key: 'com.pyb.trackme',
-    
-    notification: {
-        title: 'Hi prashant', 
-        body: '7767947111 has started sharing location with you.' 
-    },
-    
-    data: {  //you can send only notification or only data(or include both)
-        ACTION: 'STARTED_SHARING',
-        PUBLISHER: '7767947111' 
+function getNotificationData(source_mobile, action) {
+    if(action == "STARTED_SHARING") {
+        return {
+            ACTION : "STARTED_SHARING",
+            PUBLISHER : source_mobile
+        }
     }
-};
-
-fcm.send(message, function(err, response){
-    if (err) {
-        console.log("Something has gone wrong!");
-    } else {
-        console.log("Successfully sent with response: ", response);
+    if(action == "TRACKING_REQUEST") {
+        return {
+            ACTION : "TRACKING_REQUEST",
+            SUBSCRIBER : source_mobile
+        }
     }
-});
+    return {};
+}
+
+function getMessage(source_mobile, action) {
+    if(action == "STARTED_SHARING") {
+        return source_mobile +" has started sharing location with you.";
+    }
+    if(action == "TRACKING_REQUEST") {
+        return  source_mobile +" wants to track your location."
+    }
+    return "";
+}
+
+async function sendNotification(source_mobile, target_mobile, action) {
+    let noti_data = getNotificationData(source_mobile, action);
+    let noti_msg = getMessage(source_mobile, action);
+    var targetDeviceToken;
+    try{
+        targetDeviceToken = await login_dao.getFCMToken(target_mobile);
+    } catch(err) {
+        console.log("Device token not found for mobile,", target_mobile);
+    }
+    if(targetDeviceToken == undefined) {
+        console.log("Not sending push notification,", target_mobile);
+        return;
+    }
+    const message = { //this may vary according to the message type (single recipient, multicast, topic, et cetera)
+        to: targetDeviceToken,
+        collapse_key: 'com.pyb.trackme',
+        
+        notification: {
+            title: 'Hi', 
+            body: noti_msg
+        },
+        
+        data : noti_data
+        // data: {  //you can send only notification or only data(or include both)
+        //     ACTION: 'STARTED_SHARING',
+        //     PUBLISHER: '7767947111' 
+        // }
+    };
+    fcm.send(message, function(err, response){
+        if (err) {
+            console.log("Something has gone wrong while sending push notification to mobile: ", target_mobile, err.message);
+        } else {
+            console.log("Successfully sent push notification to mobile: ", target_mobile);
+        }
+    });
+
+}
+
+module.exports.sendNotification = sendNotification;

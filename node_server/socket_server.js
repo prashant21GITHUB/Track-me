@@ -1,6 +1,7 @@
 const server = require("./server.js");
 const io = server.getSocketIOInstance();
 const logger = require("./logger.js");
+const fcm = require("./fcm.js");
 
 const publishersMap = new Map();
 const connectionsMap = new Map();
@@ -24,6 +25,7 @@ io.on('connection', function (socket) {
     for (let i = 1; i < mobile_arr.length; i++) {
       socket_id = connectionsMap.get(mobile_arr[i]);
       if (socket_id != undefined) {
+        fcm.sendNotification(publisher, mobile_arr[i], "STARTED_SHARING");
         io.to(socket_id).emit("publisherAvailable", publisher);
         logger.info("emit:publisherAvailable, To:" + mobile_arr[i] + ", Socket:" + socket_id + ", Publisher:" + publisher);
       }
@@ -85,6 +87,7 @@ io.on('connection', function (socket) {
       // socket.to(socket.id).emit(data.mobile, {
       //   mobile: 'disconnected'
       // });
+      fcm.sendNotification(subscriber, mobile, "TRACKING_REQUEST")
       ackFn({
         status: "disconnected",
         lastLocation: lastLocation
@@ -141,6 +144,7 @@ io.on('connection', function (socket) {
     room = data.publisher;
     socket_id = connectionsMap.get(contact_to_add);
     if (socket_id != undefined) {
+      fcm.sendNotification(room, contact_to_add, "STARTED_SHARING");
       io.to(socket_id).emit("publisherAvailable", room);
       logger.info("on:addContact, Add contact" + contact_to_add + ", Publisher:" + room);
     } else {
