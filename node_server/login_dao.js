@@ -34,18 +34,15 @@ function logout(mobile) {
     const dbPromise = new Promise((resolve, reject) => {
         db.executeQuery(query, (err, results, fields) => {
             if (err) {
-                reject(err);
+                reject({
+                    success : false,
+                    message : err.code +" "+err.message
+                });
             } else {
-                if (results.affectedRows == 1) {
                     resolve(
                         {
                             success : true
                         });
-                } else {
-                    reject({
-                        success : false
-                    });
-                }
             }
         });
     })
