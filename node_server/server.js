@@ -224,6 +224,34 @@ app.put("/user/login", (req, res) => {
     }
 });
 
+app.put("/user/logout", (req, res) => {
+    mobile = req.body.mobile;
+    logger.info("URL:/user/logout, Mobile:" + mobile);
+    if (mobile == undefined) {
+        res.status(200).send({ success: false, message: "Enter valid mobile !!" });
+    } else {
+        login_dao.logout(mobile).then((successObj) => {
+            res.status(200).send(successObj);
+        }, (errObj) => {
+            res.status(200).send(errObj);
+        });
+    }
+});
+
+app.post("/device/addtoken", (req, res) => {
+    mobile = req.body.mobile;
+    token = req.body.token;
+    logger.info("URL:/device/addtoken" +", Mobile: " + mobile+", Token: "+ token);
+    if (mobile == undefined || token == undefined || token == "") {
+        res.status(200).send({ success: false, message: "Enter valid mobile or token details !!" });
+    } else {
+        login_dao.addFCMToken(mobile, token).then((successObj) => {
+            res.status(200).send(successObj);
+        }, (errorObj) => {
+            res.status(200).send(errorObj);
+        });
+    }
+});
 
 function startServer(port, host) {
     httpServer.listen(port, host);
