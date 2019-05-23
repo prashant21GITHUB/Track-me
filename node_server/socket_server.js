@@ -7,10 +7,10 @@ const publishersMap = new Map();
 const connectionsMap = new Map();
 const lastLocationData = new Map();
 const socketToPublisherMap = new Map();
-const activeSubscribers = new Map();
+const publisherToActiveSubscribersMap = new Map();
 
 io.on('connection', function (socket) {
-  logger.info("on:connection, Socket:" + socket.id);
+  // logger.info("on:connection, Socket:" + socket.id);
   socket.on('connectedMobile', (mobile) => {
     logger.info("on:connectedMobile, Mobile:" + mobile + ", Socket:" + socket.id);
     connectionsMap.set(mobile, socket.id);
@@ -18,17 +18,17 @@ io.on('connection', function (socket) {
 
   socket.on('startPublish', (mobile_arr) => {
     publisher = mobile_arr[0];
-    activeSubscribers.set(publisher, new Set());
+    publisherToActiveSubscribersMap.set(publisher, new Set());
     logger.info("on:startPublish, Mobile:" + publisher + ", Subscribers:" + mobile_arr.slice(1));
     publishersMap.set(publisher, socket.id);
     socketToPublisherMap.set(socket.id, publisher);
     for (let i = 1; i < mobile_arr.length; i++) {
       socket_id = connectionsMap.get(mobile_arr[i]);
       if (socket_id != undefined) {
-        fcm.sendNotification(publisher, mobile_arr[i], "STARTED_SHARING");
         io.to(socket_id).emit("publisherAvailable", publisher);
         logger.info("emit:publisherAvailable, To:" + mobile_arr[i] + ", Socket:" + socket_id + ", Publisher:" + publisher);
       }
+      fcm.sendNotification(publisher, mobile_arr[i], "STARTED_SHARING");
     }
 
   });
@@ -49,7 +49,7 @@ io.on('connection', function (socket) {
     logger.info("on:stopPublish, Mobile:" + mobile);
     clearRoom(socket, mobile);
     publishersMap.delete(mobile);
-    activeSubscribers.delete(mobile);
+    publisherToActiveSubscribersMap.delete(mobile);
     socketToPublisherMap.delete(socket.id);
   });
 
@@ -66,17 +66,15 @@ io.on('connection', function (socket) {
     const lastLocation = lastLocationData.get(mobile);
     if (publishersMap.has(mobile)) {
       logger.info("on:subscribe, joining room:" + mobile + ", Socket:" + socket.id);
-      if(activeSubscribers.has(mobile)) {
-        if(activeSubscribers.get(mobile).size == 0) {
-          socket_id = connectionsMap.get(mobile);
-          if(socket_id != undefined) {
-            logger.info("emit:startSendingLocation, Mobile:" + mobile);
-            io.to(socket_id).emit("startSendingLocation", mobile);
-          }
+      let subscribersSet = publisherToActiveSubscribersMap.get(mobile);
+      if(subscribersSet.size == 0) {
+        socket_id = publishersMap.get(mobile);
+        if(socket_id != undefined) {
+          io.to(socket_id).emit("startSendingLocation", mobile);
+          logger.info("emit:startSendingLocation, Mobile:" + mobile);
         }
-        activeSubscribers.get(mobile).add(subscriber);
-        console.log("subscribe: activeSubscribers - " + activeSubscribers);
       }
+      subscribersSet.add(subscriber);
       socket.join(mobile);
       ackFn({
         status: "connected",
@@ -84,9 +82,6 @@ io.on('connection', function (socket) {
       })
     } else {
       logger.info("on:subscribe, No room:" + mobile + ", Socket:" + socket.id);
-      // socket.to(socket.id).emit(data.mobile, {
-      //   mobile: 'disconnected'
-      // });
       fcm.sendNotification(subscriber, mobile, "TRACKING_REQUEST")
       ackFn({
         status: "disconnected",
@@ -101,18 +96,7 @@ io.on('connection', function (socket) {
     const subscriber = data.subscriber;
     logger.info("on:unsubscribe, Leaving room:" + mobile + ", Socket:" + socket.id);
     socket.leave(mobile);
-    if(activeSubscribers.has(mobile)) {
-      activeSubscribers.get(mobile).delete(subscriber);
-      if(activeSubscribers.get(mobile).size == 0) {
-        socket_id = connectionsMap.get(mobile);
-        if(socket_id != undefined) {
-          logger.info("emit:stopSendingLocation, Mobile:" + mobile);
-          io.to(socket_id).emit("stopSendingLocation", mobile);
-        }
-      }
-      console.log("unsubscribe: activeSubscribers - " + activeSubscribers);
-      
-    }
+    removeFromActiveSubscribers(mobile, subscriber);
     ackFn({
       status: "success"
     }
@@ -124,18 +108,15 @@ io.on('connection', function (socket) {
     room = data.publisher;
     socket_id = connectionsMap.get(contact_to_remove);
     if (socket_id != undefined) {
-      io.to(socket_id).emit("publisherNotAvailable", room);
       if(io.sockets.sockets[socket_id] != undefined) {
         io.sockets.sockets[socket_id].leave(room);
       }
-      if(activeSubscribers.has(room)) {
-        activeSubscribers.get(mobile).delete(contact_to_remove);
-      }
+      io.to(socket_id).emit("publisherNotAvailable", room);
       logger.info("on:removeContact, Remove contact" + contact_to_remove + ", Publisher:" + room);
-      console.log("removeContact: activeSubscribers - " + activeSubscribers);
     } else {
       logger.info("on:removeContact, No socket connection for contact to be removed, ContactToRemove: " + contact_to_remove + ", Publisher:" + room);
     }
+    removeFromActiveSubscribers(room, contact_to_remove);
 
   });
 
@@ -144,8 +125,8 @@ io.on('connection', function (socket) {
     room = data.publisher;
     socket_id = connectionsMap.get(contact_to_add);
     if (socket_id != undefined) {
-      fcm.sendNotification(room, contact_to_add, "STARTED_SHARING");
       io.to(socket_id).emit("publisherAvailable", room);
+      fcm.sendNotification(room, contact_to_add, "STARTED_SHARING");
       logger.info("on:addContact, Add contact" + contact_to_add + ", Publisher:" + room);
     } else {
       logger.info("on:addContact, No socket connection for contact to be added, ContactToAdd: " + contact_to_add + ", Publisher:" + room);
@@ -158,11 +139,24 @@ io.on('connection', function (socket) {
     // connectionsMap.delete()
     if(socketToPublisherMap.has(socket.id)) {
       let mobile = socketToPublisherMap.get(socket.id);
-      logger.info("Sending not live event due to disconnect, room:" + mobile);
-      logger.info("emit:notLive, Mobile:" + mobile);
       io.to(mobile).emit("notLive", mobile);
+      logger.info("emit:notLive due to disconnect, Mobile:" + mobile);
     }
   });
+
+  function removeFromActiveSubscribers(publisher, subscriber) {
+    if(publisherToActiveSubscribersMap.has(publisher)) {
+      let subscribersSet = publisherToActiveSubscribersMap.get(publisher);
+      subscribersSet.delete(subscriber);
+      if(subscribersSet.size == 0) {
+        socket_id = publishersMap.get(publisher);
+        if(socket_id != undefined) {
+          io.to(socket_id).emit("stopSendingLocation", publisher);
+          logger.info("emit:stopSendingLocation Active subscribers count is 0, Publisher:" + publisher);
+        }
+      }
+    }
+  }
 
 });
 
@@ -177,8 +171,8 @@ function clearRoom(socket, mobile) {
       logger.info("connected clients - room:" + room + ", clients:" + clients);
       // console.log(clients);
       clients.forEach((socket_id) => {
-        logger.info("Socket leaving room - room:" + room + ", socket:" + socket_id);
         io.sockets.sockets[socket_id].leave(room);
+        logger.info("Socket leaving room - room:" + room + ", socket:" + socket_id);
       });
     }
   });
