@@ -71,7 +71,7 @@ io.on('connection', function (socket) {
         socket_id = publishersMap.get(mobile);
         if(socket_id != undefined) {
           io.to(socket_id).emit("startSendingLocation", mobile);
-          logger.info("emit:startSendingLocation, Mobile:" + mobile);
+          logger.info("emit:startSendingLocation, Mobile:" + mobile + ", Socket: " + socket_id);
         }
       }
       subscribersSet.add(subscriber);
@@ -152,7 +152,7 @@ io.on('connection', function (socket) {
         socket_id = publishersMap.get(publisher);
         if(socket_id != undefined) {
           io.to(socket_id).emit("stopSendingLocation", publisher);
-          logger.info("emit:stopSendingLocation Active subscribers count is 0, Publisher:" + publisher);
+          logger.info("emit:stopSendingLocation Active subscribers count is 0, Publisher:" + publisher + ", Socket: " + socket_id);
         }
       }
     }
