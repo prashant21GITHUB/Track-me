@@ -68,7 +68,7 @@ io.on('connection', function (socket) {
       logger.info("on:subscribe, joining room:" + mobile + ", Socket:" + socket.id);
       let subscribersSet = publisherToActiveSubscribersMap.get(mobile);
       if(subscribersSet.size == 0) {
-        socket_id = publishersMap.get(mobile);
+        socket_id = connectionsMap.get(mobile);
         if(socket_id != undefined) {
           io.to(socket_id).emit("startSendingLocation", mobile);
           logger.info("emit:startSendingLocation, Mobile:" + mobile + ", Socket: " + socket_id);
@@ -149,7 +149,7 @@ io.on('connection', function (socket) {
       let subscribersSet = publisherToActiveSubscribersMap.get(publisher);
       subscribersSet.delete(subscriber);
       if(subscribersSet.size == 0) {
-        socket_id = publishersMap.get(publisher);
+        socket_id = connectionsMap.get(publisher);
         if(socket_id != undefined) {
           io.to(socket_id).emit("stopSendingLocation", publisher);
           logger.info("emit:stopSendingLocation Active subscribers count is 0, Publisher:" + publisher + ", Socket: " + socket_id);
