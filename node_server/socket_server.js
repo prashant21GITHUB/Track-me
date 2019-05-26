@@ -27,8 +27,8 @@ io.on('connection', function (socket) {
       if (socket_id != undefined) {
         io.to(socket_id).emit("publisherAvailable", publisher);
         logger.info("emit:publisherAvailable, To:" + mobile_arr[i] + ", Socket:" + socket_id + ", Publisher:" + publisher);
+        fcm.sendNotification(publisher, mobile_arr[i], "STARTED_SHARING");
       }
-      fcm.sendNotification(publisher, mobile_arr[i], "STARTED_SHARING");
     }
 
   });
@@ -126,7 +126,9 @@ io.on('connection', function (socket) {
     socket_id = connectionsMap.get(contact_to_add);
     if (socket_id != undefined) {
       io.to(socket_id).emit("publisherAvailable", room);
-      fcm.sendNotification(room, contact_to_add, "STARTED_SHARING");
+      if(connectionsMap.has(contact_to_add)) {
+        fcm.sendNotification(room, contact_to_add, "STARTED_SHARING");
+      }
       logger.info("on:addContact, Add contact" + contact_to_add + ", Publisher:" + room);
     } else {
       logger.info("on:addContact, No socket connection for contact to be added, ContactToAdd: " + contact_to_add + ", Publisher:" + room);
