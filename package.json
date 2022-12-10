@@ -18,8 +18,8 @@
   },
   "homepage": "https://github.com/prashant21GITHUB/Track-me#readme",
   "dependencies": {
-    "body-parser": "^1.18.3",
-    "express": "^4.16.4",
+    "body-parser": "^1.20.1",
+    "express": "^4.18.2",
     "fcm-node": "1.5.0",
     "mysql": "2.16.0",
     "properties-reader": "0.0.16",
